@@ -1,66 +1,66 @@
-import PropTypes from 'prop-types';
 import css from './ContactForm.module.css';
-import { useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { nanoid } from 'nanoid';
+import { addContact } from 'redux/contactsSlice';
+import { getContacts } from 'redux/selectors';
 
-const ContactForm=  ( {addContact} )=>  {
-  const [name, setName] = useState('');
-  const [number, setNumber] = useState('');
+export const ContactForm = () => {
+  const dispatch = useDispatch();
+  const contacts = useSelector(getContacts);
 
-  const handleNameChange = (evt) => {
-    setName(evt.target.value);
-  };
-
-  const handleNumberChange = (evt) => {
-    setNumber(evt.target.value);
-  };
-
-  const handleSubmit = (evt) => {
+  const handleSubmit = evt => {
     evt.preventDefault();
-    addContact({ name, number });
-    setName('');
-    setNumber('');
+
+    const contact = {
+      id: nanoid(),
+      name: evt.currentTarget.elements.name.value,
+      number: evt.currentTarget.elements.number.value,
+    };
+
+    const addList = contacts.find(
+      ({ name }) => name.toLowerCase() === contact.name.toLowerCase()
+    );
+
+    if (addList) {
+      return alert(`${contact.name} is already in contacts!`);
+    }
+    dispatch(addContact(contact));
+    evt.currentTarget.reset();
   };
 
   return (
     <form className={css.form} onSubmit={handleSubmit}>
-      <label>
+      <label htmlFor={nanoid()}>
         Name
-        <br  />
+        <br />
         <input
           className={css.input}
           type="text"
-          value={name}
-          onChange={handleNameChange}
+          pattern="^[a-zA-Zа-яА-Я]+(([' -][a-zA-Zа-яА-Я ])?[a-zA-Zа-яА-Я]*)*$"
           name="name"
           placeholder="John Dow"
+          id={nanoid()}
           required
         />
       </label>
-      <br  />
-      <label>
+      <br />
+      <label htmlFor={nanoid()}>
         Phone number
-        <br  />
+        <br />
         <input
           className={css.input}
           type="tel"
-          value={number}
-          onChange={handleNumberChange}
           name="number"
           pattern="[0-9]{3}-[0-9]{2}-[0-9]{2}"
           placeholder="123-45-67"
+          id={nanoid()}
           required
         />
       </label>
-       <br  />
+      <br />
       <button className={css.button} type="submit">
         Add contact
       </button>
     </form>
   );
 };
-
-ContactForm.propTypes = {
-  addContact: PropTypes.func.isRequired,
-};
-
-export default ContactForm;

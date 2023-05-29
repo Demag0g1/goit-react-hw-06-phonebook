@@ -1,34 +1,45 @@
-import PropTypes from 'prop-types';
 import css from './ContactList.module.css';
+import { useDispatch, useSelector } from 'react-redux';
+import { getContacts, getFilter } from 'redux/selectors';
+import { delContact } from 'redux/contactsSlice';
 
- const ContactList = ({ contacts, delContact }) => {
+export const ContactList = () => {
+  const contacts = useSelector(getContacts);
+  const filter = useSelector(getFilter);
+  const dispatch = useDispatch();
+
+  const contactsFiltered = contacts?.filter(contact =>
+    contact?.name?.toLowerCase().includes(filter.toLowerCase())
+  );
+
+  const onDelContact = id => {
+    dispatch(delContact(id));
+  };
+  if (!contactsFiltered?.length) {
+    return (
+      <div>
+        {' '}
+        <br />
+        No contacts found ¯\_(ツ)_/¯{' '}
+      </div>
+    );
+  }
+
   return (
     <ul className={css.list}>
-      {contacts.map(contact => {
-        return (
-          <li className={css.item} key={contact.id}>
-            <span>{contact.name}:</span>
-            <span className={css.number}>
-              {contact.number}
-            </span>
-            <button
-              className={css.button}
-              type="button"
-              onClick={() => {
-                delContact(contact.id);
-              }}
-            >
-              Delete
-            </button>
-          </li>
-        );
-      })}
+      {contactsFiltered.map(({ id, name, number }) => (
+        <div className={css.item} key={id}>
+          <span>{name}:</span>
+          <span className={css.number}>{number}</span>
+          <button
+            className={css.button}
+            type="button"
+            onClick={() => onDelContact(id)}
+          >
+            Delete
+          </button>
+        </div>
+      ))}
     </ul>
   );
 };
-
-ContactList.propTypes = {
-  delContact: PropTypes.func.isRequired,
-  contacts: PropTypes.array.isRequired,
-};
-export default ContactList;
